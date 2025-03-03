@@ -20,7 +20,7 @@ import { useCachedPromise } from "@raycast/utils";
 import { GetInstalledBrowsers } from "get-installed-browsers";
 import { GitRepo, Preferences, tildifyPath, GitRepoService, GitRepoType, OpenWith } from "./utils";
 import { useUsageBasedSort } from "./hooks/useUsageBasedSort";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 
 const installedBrowsers = GetInstalledBrowsers().map(
   // Safari gets found in /Applications here but actually exists in
@@ -349,8 +349,19 @@ function openInNeovimWezTerm(repoPath: string) {
   // Escape any special characters in the path
   const escapedPath = repoPath.replace(/"/g, '\\"');
 
+  let background;
+  try {
+    background = execSync("defaults read -g AppleInterfaceStyle", { encoding: "utf-8" }).trim();
+  } catch {
+    background = "Light";
+  }
+
+  const vimBackground = background === "Dark" ? "dark" : "light";
+  const command = `"set background=${vimBackground}"`;
+  const escapedCommand = command.replace(/"/g, '\\"');
+
   // Execute wezterm directly with proper arguments
-  exec(`zsh -l -c "wezterm cli spawn --new-window nvim ."`, (error) => {
+  exec(`zsh -il -c "wezterm cli spawn --new-window --cwd ${escapedPath} nvim --cmd ${escapedCommand} ."`, (error) => {
     if (error) {
       showToast({
         style: Toast.Style.Failure,
