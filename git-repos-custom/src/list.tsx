@@ -359,9 +359,10 @@ function openInNeovimWezTerm(repoPath: string) {
   const vimBackground = background === "Dark" ? "dark" : "light";
   const command = `"set background=${vimBackground}"`;
   const escapedCommand = command.replace(/"/g, '\\"');
+  const cmdArgs = vimBackground === "dark" ? `--cmd ${escapedCommand}` : "";
 
   // Execute wezterm directly with proper arguments
-  exec(`zsh -il -c "wezterm cli spawn --new-window --cwd ${escapedPath} nvim --cmd ${escapedCommand} ."`, (error) => {
+  exec(`zsh -il -c "wezterm cli spawn --new-window --cwd ${escapedPath} nvim ${cmdArgs} ."`, (error) => {
     if (error) {
       showToast({
         style: Toast.Style.Failure,
